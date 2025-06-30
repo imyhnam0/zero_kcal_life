@@ -18,7 +18,6 @@ void main() async {
   runApp(const MyApp());
 }
 
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -26,12 +25,27 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        scaffoldBackgroundColor: const Color(0xFFF9F9F9),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          iconTheme: IconThemeData(color: Colors.black),
+          titleTextStyle: TextStyle(
+            color: Colors.black,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(color: Colors.black87),
+        ),
+      ),
       home: SplashScreen(),
     );
   }
 }
 
-// SplashScreen에서 로그인 상태 확인 및 유저 정보 설정
+// SplashScreen
 class SplashScreen extends StatefulWidget {
   @override
   _SplashScreenState createState() => _SplashScreenState();
@@ -51,12 +65,10 @@ class _SplashScreenState extends State<SplashScreen> {
         globalUid = user.uid;
         globalEmail = user.email;
         try {
-
           DocumentSnapshot userDoc = await FirebaseFirestore.instance
               .collection('Users')
               .doc(globalEmail)
               .get();
-
           if (userDoc.exists) {
             globalUserName = userDoc['name'];
             print("✅ globalUid: $globalUid, globalUserName: $globalUserName");
@@ -65,13 +77,11 @@ class _SplashScreenState extends State<SplashScreen> {
           print("❌ 사용자 이름 불러오기 실패: $e");
         }
 
-        // 홈 화면으로 이동
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MyHomePage()),
         );
       } else {
-        // 로그인 안된 경우 로그인 페이지로 이동
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => LoginPage()),
@@ -82,9 +92,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.blueGrey.shade900,
-      body: const Center(
+    return const Scaffold(
+      backgroundColor: Color(0xFFF9F9F9),
+      body: Center(
         child: CircularProgressIndicator(),
       ),
     );
@@ -96,32 +106,19 @@ class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
 
   @override
-
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0E1C1F),
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: const Color(0xFF122829),
         centerTitle: true,
-        title: const Text(
-          'Zero_kcal_life',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.0,
-          ),
-        ),
+        elevation: 0,
+        title: const Text('Zero_kcal_life'),
         leading: IconButton(
-          icon: const Icon(Icons.local_dining_rounded, color: Colors.tealAccent),
-          onPressed: () {
-            // 여기에 기능 추가
-          },
+          icon: const Icon(Icons.local_dining_rounded, color: Colors.teal),
+          onPressed: () {},
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.tealAccent),
+            icon: const Icon(Icons.settings, color: Colors.teal),
             onPressed: () {
               Navigator.push(
                 context,
@@ -140,7 +137,7 @@ class MyHomePage extends StatelessWidget {
               context,
               icon: Icons.restaurant_menu,
               label: '오늘의 식단',
-              color: Colors.tealAccent.shade400,
+              color: Colors.teal,
               onTap: () {
                 Navigator.push(
                   context,
@@ -148,12 +145,12 @@ class MyHomePage extends StatelessWidget {
                 );
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 40),
             _buildMainButton(
               context,
               icon: Icons.edit_note_rounded,
               label: '식단 기록',
-              color: Colors.lightGreenAccent.shade400,
+              color: Colors.lightGreen,
               onTap: () {
                 Navigator.push(
                   context,
@@ -161,12 +158,12 @@ class MyHomePage extends StatelessWidget {
                 );
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 40),
             _buildMainButton(
               context,
               icon: Icons.notes_rounded,
               label: '메모장',
-              color: Colors.orangeAccent.shade200,
+              color: Colors.orange,
               onTap: () {
                 Navigator.push(
                   context,
@@ -191,15 +188,23 @@ class MyHomePage extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+        padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 20),
+        margin: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
-          border: Border.all(color: color, width: 1.5),
-          borderRadius: BorderRadius.circular(18),
+          color: Colors.white,
+          border: Border.all(color: color, width: 2),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            Icon(icon, size: 32, color: color),
+            Icon(icon, size: 40, color: color),
             const SizedBox(width: 20),
             Text(
               label,

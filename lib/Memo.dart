@@ -128,19 +128,19 @@ class _MemoPageState extends State<MemoPage> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: Drawer(
-        backgroundColor: const Color(0xFF1F2C2F),
+        backgroundColor: Colors.grey[100],
         child: ListView(
           padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 16),
           children: [
             ListTile(
-              title: const Text('메모 추가', style: TextStyle(color: Colors.white)),
-              leading: const Icon(Icons.note_add, color: Colors.white),
+              title: const Text('메모 추가', style: TextStyle(color: Colors.black87)),
+              leading: const Icon(Icons.note_add, color: Colors.black),
               onTap: () {
                 Navigator.pop(context);
                 _showAddMemoDialog();
               },
             ),
-            const Divider(color: Colors.white24),
+            const Divider(color: Colors.black26),
             ...memoMap.keys.toList().asMap().entries.map((entry) {
               int index = entry.key;
               String title = entry.value;
@@ -155,15 +155,15 @@ class _MemoPageState extends State<MemoPage> {
                       title,
                       style: TextStyle(
                         color: title == selectedTitle
-                            ? Colors.tealAccent
-                            : Colors.white70,
+                            ? Colors.black
+                            : Colors.grey[700],
                         fontWeight: title == selectedTitle
                             ? FontWeight.bold
                             : FontWeight.normal,
                       ),
                     ),
                     trailing: IconButton(
-                      icon: const Icon(Icons.more_vert, color: Colors.white70),
+                      icon: const Icon(Icons.more_vert, color: Colors.black),
                       onPressed: () {
                         setState(() {
                           expandedIndex = isExpanded ? null : index; // toggle
@@ -261,7 +261,7 @@ class _MemoPageState extends State<MemoPage> {
                               padding: EdgeInsets.symmetric(vertical: 4),
                               child: Text(
                                 '✏️ 이름 수정',
-                                style: TextStyle(color: Colors.white70),
+                                style: TextStyle(color: Colors.black),
                               ),
                             ),
                           ),
@@ -322,17 +322,17 @@ class _MemoPageState extends State<MemoPage> {
       appBar: AppBar(
         title: Text(
           selectedTitle ?? 'Memo',
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.black),
         ),
-        backgroundColor: Colors.blueGrey.shade900.withOpacity(0.95),
-        elevation: 0,
+        backgroundColor: Colors.white,
+        elevation: 0.5,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
+            icon: const Icon(Icons.menu, color: Colors.black),
             onPressed: () => _scaffoldKey.currentState?.openDrawer(),
           ),
         ],
@@ -348,15 +348,16 @@ class _MemoPageState extends State<MemoPage> {
                 onChanged: _updateMemoText,
                 maxLines: null,
                 keyboardType: TextInputType.multiline,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-                cursorColor: Colors.tealAccent,
+                style: const TextStyle(color: Colors.black87, fontSize: 16),
+                cursorColor: Colors.teal,
                 decoration: const InputDecoration.collapsed(
                   hintText: '여기에 메모를 입력하세요...',
-                  hintStyle: TextStyle(color: Colors.white38),
+                  hintStyle: TextStyle(color: Colors.grey),
                 ),
               ),
             ),
-      backgroundColor: const Color(0xFF0E1C1F),
+      backgroundColor: Colors.white,
+
     );
   }
 
