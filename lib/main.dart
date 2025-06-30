@@ -1,65 +1,137 @@
 import 'package:flutter/material.dart';
 import 'TodayFood.dart';
+import 'FoodRecord.dart';
+import 'firebase_options.dart';
+import 'loginpage.dart';
+import 'Memo.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'MyInfo.dart';
+import 'GlobalsName.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Zero_kcal_life',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Zero_kcal_life'),
+      debugShowCheckedModeBanner: false,
+      home: SplashScreen(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key, required this.title});
+// SplashScreen에서 로그인 상태 확인 및 유저 정보 설정
+class SplashScreen extends StatefulWidget {
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
 
-  final String title;
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) async {
+      if (!mounted) return;
+      if (user != null) {
+        globalUid = user.uid;
+        globalEmail = user.email;
+        try {
+
+          DocumentSnapshot userDoc = await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(globalEmail)
+              .get();
+
+          if (userDoc.exists) {
+            globalUserName = userDoc['name'];
+            print("✅ globalUid: $globalUid, globalUserName: $globalUserName");
+          }
+        } catch (e) {
+          print("❌ 사용자 이름 불러오기 실패: $e");
+        }
+
+        // 홈 화면으로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MyHomePage()),
+        );
+      } else {
+        // 로그인 안된 경우 로그인 페이지로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0E1C1F), // 다크 그린 배경
+      backgroundColor: Colors.blueGrey.shade900,
+      body: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+}
+
+// 홈 화면
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({super.key});
+
+  @override
+
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0E1C1F),
       appBar: AppBar(
-      elevation: 0, // 그림자 제거
-      backgroundColor: const Color(0xFF122829), // 더 짙은 그린블루 계열
-      centerTitle: true,
-      title: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 22,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.0,
+        elevation: 0,
+        backgroundColor: const Color(0xFF122829),
+        centerTitle: true,
+        title: const Text(
+          'Zero_kcal_life',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.0,
+          ),
         ),
-      ),
-      leading: IconButton(
-        icon: const Icon(Icons.local_dining_rounded, color: Colors.tealAccent),
-        onPressed: () {
-          // TODO: 원하는 기능 연결 (예: drawer 열기)
-        },
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.settings, color: Colors.tealAccent),
+        leading: IconButton(
+          icon: const Icon(Icons.local_dining_rounded, color: Colors.tealAccent),
           onPressed: () {
-            // TODO: 설정 페이지 이동
+            // 여기에 기능 추가
           },
         ),
-      ],
-    ),
-
-    body: Padding(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings, color: Colors.tealAccent),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const MyInfoPage()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -83,7 +155,10 @@ class MyHomePage extends StatelessWidget {
               label: '식단 기록',
               color: Colors.lightGreenAccent.shade400,
               onTap: () {
-                // TODO: 식단 기록 이동
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const FoodRecordPage()),
+                );
               },
             ),
             const SizedBox(height: 20),
@@ -93,7 +168,10 @@ class MyHomePage extends StatelessWidget {
               label: '메모장',
               color: Colors.orangeAccent.shade200,
               onTap: () {
-                // TODO: 메모장 이동
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MemoPage()),
+                );
               },
             ),
           ],

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1003576425334",
+    "project_id": "zero-kcal-life",
+    "storage_bucket": "zero-kcal-life.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1003576425334:android:7c8ee750e4b2378f9fd857",
+        "android_client_info": {
+          "package_name": "com.example.zero_kcal_life"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAa3ATdFHUH3Xbo4CU76t6rhi2Dvan1u6I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
