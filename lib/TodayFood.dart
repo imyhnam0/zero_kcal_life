@@ -20,7 +20,7 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
   int carbs = 0;
   int protein = 0;
   int fat = 0;
-  late int total = carbs + protein + fat;
+  int kcal = 0;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -36,7 +36,9 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
     _loadFoodData(); // ← 저장된 데이터를 불러오는 함수
   }
 
+
   @override
+
   Widget build(BuildContext context) {
     Map<String, double> dataMap = {
       "탄수화물": carbs.toDouble(),
@@ -48,6 +50,7 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
       Colors.orange,
       Colors.teal,
       Colors.pinkAccent,
+      Colors.black,
     ];
 
     return Scaffold(
@@ -128,6 +131,9 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const SizedBox(height: 10),
+                    _buildLegendItem(color: colorList[3], label: '칼로리: $kcal'),
+                    const SizedBox(height: 10),
                     _buildLegendItem(color: colorList[0], label: '탄수화물: $carbs g'),
                     const SizedBox(height: 10),
                     _buildLegendItem(color: colorList[1], label: '단백질: $protein g'),
@@ -367,6 +373,7 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
 
           if (data.containsKey('Sum')) {
             final sum = Map<String, dynamic>.from(data['Sum']);
+            kcal = sum['kcal'] ?? 0;
             carbs = sum['carbs'] ?? 0;
             protein = sum['protein'] ?? 0;
             fat = sum['fat'] ?? 0;
@@ -483,13 +490,17 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
       final carbMatch = RegExp(r'총 탄수화물\s*=\s*([\d.]+)').firstMatch(text);
       final proteinMatch = RegExp(r'총 단백질\s*=\s*([\d.]+)').firstMatch(text);
       final fatMatch = RegExp(r'총 지방\s*=\s*([\d.]+)').firstMatch(text);
+      final kcalMatch = RegExp(r'총 칼로리\s*=\s*([\d.]+)').firstMatch(text);
 
 
-      if (carbMatch != null && proteinMatch != null && fatMatch != null) {
+
+
+      if (carbMatch != null && proteinMatch != null && fatMatch != null && kcalMatch != null) {
         setState(() {
           carbs = double.parse(carbMatch.group(1)!).round();
           protein = double.parse(proteinMatch.group(1)!).round();
           fat = double.parse(fatMatch.group(1)!).round();
+          kcal = double.parse(kcalMatch.group(1)!).round();
         });
         await FirebaseFirestore.instance
             .collection('Users')
@@ -501,7 +512,19 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
             'carbs': carbs,
             'protein': protein,
             'fat': fat,
+            'kcal': kcal,
           }
+        });
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(globalEmail)
+            .collection('Calender')
+            .doc(today)
+            .set({
+            'carbs': carbs,
+            'protein': protein,
+            'fat': fat,
+            'kcal': kcal,
         });
       }
     }

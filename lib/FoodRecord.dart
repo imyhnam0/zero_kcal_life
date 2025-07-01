@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'GlobalsName.dart';
+import 'dart:math';
+import 'CalenderCategoryPage.dart';
 
 class FoodRecordPage extends StatefulWidget {
   const FoodRecordPage({super.key});
@@ -13,17 +17,51 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
 
-  // 예시 데이터 (실제로는 DB 등에서 불러와야 함)
-  final Map<String, Map<String, int>> dailyMacros = {
-    '2025-06-27': {'cal': 2100, 'carbs': 220, 'protein': 160, 'fat': 55},
-    '2025-06-26': {'cal': 1950, 'carbs': 180, 'protein': 130, 'fat': 65},
+  Map<String, int> macros = {
+    'cal': 0,
+    'carbs': 0,
+    'protein': 0,
+    'fat': 0,
   };
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadMacrosForDate(_selectedDay);
+  }
+
+
+
+  Future<void> _loadMacrosForDate(DateTime date) async {
+    final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+    final doc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(globalEmail)
+        .collection('Calender')
+        .doc(formattedDate)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+      setState(() {
+        macros = {
+          'cal': (data['kcal'] ?? 0) as int,
+          'carbs': (data['carbs'] ?? 0) as int,
+          'protein': (data['protein'] ?? 0) as int,
+          'fat': (data['fat'] ?? 0) as int,
+        };
+      });
+    } else {
+      setState(() {
+        macros = {'cal': 0, 'carbs': 0, 'protein': 0, 'fat': 0};
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDay);
-    final macros = dailyMacros[formattedDate] ??
-        {'cal': 0, 'carbs': 0, 'protein': 0, 'fat': 0};
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2FDFC),
@@ -38,26 +76,262 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
           fontWeight: FontWeight.bold,
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: TextButton(
-              onPressed: () {
+          TextButton(
+            onPressed: () async {
+              final DocumentReference ref = FirebaseFirestore.instance
+                  .collection('Users')
+                  .doc(globalEmail)
+                  .collection('CalenderKategorie')
+                  .doc('Titles');
 
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.teal,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              List<Map<String, Map<String, dynamic>>> categoryList = [];
+
+              // Firestore에서 기존 카테고리 불러오기
+              final doc = await ref.get();
+              if (doc.exists && doc.data() != null) {
+                final data = doc.data() as Map<String, dynamic>;
+                final raw = data['titles'];
+                if (raw is List) {
+                  categoryList = raw
+                      .map((e) => Map<String, Map<String, dynamic>>.from(
+                      Map<String, dynamic>.from(e)))
+                      .toList();
+                }
+              }
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return StatefulBuilder(
+                    builder: (context, setState) {
+                      return AlertDialog(
+                        backgroundColor: Colors.grey[200],
+                        title: const Text(
+                          "카테고리 목록",
+                          style: TextStyle(fontWeight: FontWeight.bold
+                          , fontSize: 20, color: Colors.black),
+                        ),
+                        content: SizedBox(
+                          width: double.maxFinite,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (categoryList.isEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 20),
+                                  child: Text("저장된 카테고리가 없습니다."),
+                                ),
+                              if (categoryList.isNotEmpty)
+                                ...categoryList.map((map) {
+                                  final title = map.keys.first;
+                                  return Card(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12)),
+                                    margin: const EdgeInsets.symmetric(vertical: 6),
+                                    child: ListTile(
+                                      title: Text(
+                                        title,
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.delete, color: Colors.red),
+                                        onPressed: () async {
+                                          final confirm = await showDialog<bool>(
+                                            context: context,
+                                            builder: (context) => AlertDialog(
+                                              backgroundColor: const Color(0xFFFDFDFD),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(20),
+                                              ),
+                                              title: const Text(
+                                                "삭제 확인",
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 20,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                              content: Text(
+                                                '정말 "$title" 카테고리를 삭제할까요?',
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.black54,
+                                                ),
+                                              ),
+                                              actionsPadding: const EdgeInsets.only(right: 12, bottom: 8),
+                                              actions: [
+                                                TextButton(
+                                                  style: TextButton.styleFrom(
+                                                    foregroundColor: Colors.grey[700],
+                                                    textStyle: const TextStyle(fontSize: 15),
+                                                  ),
+                                                  child: const Text("취소"),
+                                                  onPressed: () => Navigator.pop(context, false),
+                                                ),
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.redAccent,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(10),
+                                                    ),
+                                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                                  ),
+                                                  child: const Text(
+                                                    "삭제",
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                  onPressed: () => Navigator.pop(context, true),
+                                                ),
+                                              ],
+                                            )
+
+                                          );
+
+                                          if (confirm == true) {
+                                            categoryList.removeWhere((item) => item.containsKey(title));
+                                            await ref.set({'titles': categoryList}, SetOptions(merge: true));
+                                            setState(() {});
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text('"$title" 삭제됨')),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                      onTap: () {
+                                        Navigator.of(context).pop();
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => CalenderCategoryPage(categoryTitle: title),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  );
+                                }),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton.icon(
+                            onPressed: () {
+                              final TextEditingController inputController = TextEditingController();
+
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    backgroundColor: const Color(0xFFFDFDFD),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    title: const Text(
+                                      "새 카테고리 입력",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    content: TextField(
+                                      controller: inputController,
+                                      decoration: InputDecoration(
+                                        hintText: "카테고리 이름 입력",
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: const BorderSide(color: Colors.grey),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: const BorderSide(color: Colors.teal, width: 2),
+                                        ),
+                                      ),
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                    actionsPadding: const EdgeInsets.only(right: 12, bottom: 10),
+                                    actions: [
+                                      TextButton(
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.grey[700],
+                                          textStyle: const TextStyle(fontSize: 15),
+                                        ),
+                                        child: const Text("취소"),
+                                        onPressed: () => Navigator.of(context).pop(),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.teal,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                        ),
+                                        child: const Text(
+                                          "저장",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        onPressed: () async {
+                                          final input = inputController.text.trim();
+                                          if (input.isEmpty) return;
+
+                                          final exists = categoryList.any((item) => item.containsKey(input));
+                                          if (!exists) {
+                                            categoryList.add({
+                                              input: {"startDate": "", "endDate": ""},
+                                            });
+                                            await ref.set({'titles': categoryList}, SetOptions(merge: true));
+                                            setState(() {});
+                                          }
+
+                                          Navigator.of(context).pop();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('"$input" 카테고리 저장됨')),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            icon: const Icon(Icons.add),
+                            label: const Text("생성"),
+                            style: TextButton.styleFrom(foregroundColor: Colors.teal),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              );
+
+
+
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.teal,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text(
-                '카테고리',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+            child: const Text(
+              '카테고리',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         ],
+
+
+
+
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.teal),
           onPressed: () => Navigator.pop(context),
@@ -75,6 +349,7 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                 _selectedDay = selected;
                 _focusedDay = focused;
               });
+              _loadMacrosForDate(selected); // 🔥 날짜 선택 시 해당 데이터 로드
             },
             calendarStyle: const CalendarStyle(
               todayDecoration: BoxDecoration(
