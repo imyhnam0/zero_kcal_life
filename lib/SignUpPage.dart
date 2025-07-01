@@ -102,7 +102,7 @@ class _SignUpPageState extends State<SignUpPage> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.blueGrey.shade900,
+        backgroundColor: Colors.green,
       ),
       body: Stack(
         children: [
@@ -111,9 +111,9 @@ class _SignUpPageState extends State<SignUpPage> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.blueGrey.shade900,
-                    Colors.black,
-                    Colors.grey.shade900,
+                    Colors.green.shade900,
+                    Colors.green.shade800,
+                    Colors.green.shade900,
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -135,7 +135,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 child: Column(
                   children: [
                     const Text(
-                      'Join the Grind!',
+                      '환영합니다',
                       style: TextStyle(
                         fontFamily: 'Pacifico',
                         fontSize: 36,

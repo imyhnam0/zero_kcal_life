@@ -324,7 +324,7 @@ class _MemoPageState extends State<MemoPage> {
           selectedTitle ?? 'Memo',
           style: const TextStyle(color: Colors.black),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.green,
         elevation: 0.5,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),

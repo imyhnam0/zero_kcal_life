@@ -9,6 +9,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'MyInfo.dart';
 import 'GlobalsName.dart';
+import 'package:intl/intl.dart';
+import 'package:pie_chart/pie_chart.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +31,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFFF9F9F9),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.green,
           iconTheme: IconThemeData(color: Colors.black),
           titleTextStyle: TextStyle(
             color: Colors.black,
@@ -103,8 +105,49 @@ class _SplashScreenState extends State<SplashScreen> {
 }
 
 // 홈 화면
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int kcal = 0;
+  int carbs = 0;
+  int protein = 0;
+  int fat = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTodaySummary();
+  }
+
+  Future<void> _loadTodaySummary() async {
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(globalEmail)
+          .collection('TodayFood')
+          .doc(today)
+          .get();
+
+      if (doc.exists && doc.data()!.containsKey('Sum')) {
+        final sum = Map<String, dynamic>.from(doc['Sum']);
+        setState(() {
+          kcal = sum['kcal'] ?? 0;
+          carbs = sum['carbs'] ?? 0;
+          protein = sum['protein'] ?? 0;
+          fat = sum['fat'] ?? 0;
+        });
+      }
+    } catch (e) {
+      print('❌ TodayFood summary 불러오기 실패: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,14 +155,19 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         centerTitle: true,
         elevation: 0,
-        title: const Text('Zero_kcal_life'),
+        title: const Text('Zero_kcal_life',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            )),
         leading: IconButton(
           icon: const Icon(Icons.local_dining_rounded, color: Colors.teal),
           onPressed: () {},
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.teal),
+            icon: const Icon(Icons.settings, color: Colors.black),
             onPressed: () {
               Navigator.push(
                 context,
@@ -130,21 +178,29 @@ class MyHomePage extends StatelessWidget {
         ],
       ),
       body: Padding(
+
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            _buildSummaryCard(),
+            const SizedBox(height: 20),
             _buildMainButton(
               context,
               icon: Icons.restaurant_menu,
               label: '오늘의 식단',
               color: Colors.teal,
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const TodayFoodPage()),
                 );
+
+                if (result == true) {
+                  _loadTodaySummary(); // 저장했으면 다시 요약 갱신
+                }
               },
+
             ),
             const SizedBox(height: 40),
             _buildMainButton(
@@ -177,6 +233,79 @@ class MyHomePage extends StatelessWidget {
       ),
     );
   }
+  Widget _buildSummaryCard() {
+    final Map<String, double> dataMap = {
+      "탄수화물": carbs.toDouble(),
+      "단백질": protein.toDouble(),
+      "지방": fat.toDouble(),
+    };
+
+    final List<Color> colorList = [
+      Colors.orange,
+      Colors.teal,
+      Colors.pinkAccent,
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.teal.shade50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.teal.shade100),
+      ),
+      child: Row(
+        children: [
+          PieChart(
+            dataMap: dataMap,
+            animationDuration: const Duration(milliseconds: 800),
+            chartRadius: 80,
+            chartType: ChartType.ring,
+            ringStrokeWidth: 22,
+            colorList: colorList,
+            chartValuesOptions: const ChartValuesOptions(
+              showChartValuesInPercentage: true,
+              showChartValueBackground: false,
+              showChartValues: false, // 퍼센트 텍스트 제거
+            ),
+            legendOptions: const LegendOptions(showLegends: false),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildLegendItem("칼로리", "$kcal kcal", Colors.black),
+                const SizedBox(height: 8),
+                _buildLegendItem("탄수화물", "$carbs g", colorList[0]),
+                const SizedBox(height: 8),
+                _buildLegendItem("단백질", "$protein g", colorList[1]),
+                const SizedBox(height: 8),
+                _buildLegendItem("지방", "$fat g", colorList[2]),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  Widget _buildLegendItem(String label, String value, Color color) {
+    return Row(
+      children: [
+        Container(width: 12, height: 12, color: color),
+        const SizedBox(width: 8),
+        Text(
+          "$label: ",
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 15),
+        ),
+      ],
+    );
+  }
+
 
   Widget _buildMainButton(
       BuildContext context, {
@@ -221,3 +350,4 @@ class MyHomePage extends StatelessWidget {
     );
   }
 }
+

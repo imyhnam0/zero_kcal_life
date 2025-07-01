@@ -3,7 +3,6 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'GlobalsName.dart';
-import 'dart:math';
 import 'CalenderCategoryPage.dart';
 
 class FoodRecordPage extends StatefulWidget {
@@ -38,18 +37,20 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
     final doc = await FirebaseFirestore.instance
         .collection('Users')
         .doc(globalEmail)
-        .collection('Calender')
+        .collection('TodayFood')
         .doc(formattedDate)
         .get();
 
     if (doc.exists) {
       final data = doc.data()!;
+      final sum = data['Sum'] ?? {};
+
       setState(() {
         macros = {
-          'cal': (data['kcal'] ?? 0) as int,
-          'carbs': (data['carbs'] ?? 0) as int,
-          'protein': (data['protein'] ?? 0) as int,
-          'fat': (data['fat'] ?? 0) as int,
+          'cal': (sum['kcal'] ?? 0) as int,
+          'carbs': (sum['carbs'] ?? 0) as int,
+          'protein': (sum['protein'] ?? 0) as int,
+          'fat': (sum['fat'] ?? 0) as int,
         };
       });
     } else {
@@ -61,13 +62,12 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDay);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2FDFC),
       appBar: AppBar(
         title: const Text("식단 기록"),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.green,
         elevation: 0,
         centerTitle: true,
         titleTextStyle: const TextStyle(
@@ -104,12 +104,13 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                   return StatefulBuilder(
                     builder: (context, setState) {
                       return AlertDialog(
-                        backgroundColor: Colors.grey[200],
+                        backgroundColor: Colors.green[100],
                         title: const Text(
                           "카테고리 목록",
                           style: TextStyle(fontWeight: FontWeight.bold
                           , fontSize: 20, color: Colors.black),
                         ),
+
                         content: SizedBox(
                           width: double.maxFinite,
                           child: Column(
@@ -124,6 +125,7 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                                 ...categoryList.map((map) {
                                   final title = map.keys.first;
                                   return Card(
+                                    color: const Color(0xFFE8F5E9),
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12)),
                                     margin: const EdgeInsets.symmetric(vertical: 6),
@@ -132,73 +134,134 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                                         title,
                                         style: const TextStyle(fontWeight: FontWeight.bold),
                                       ),
-                                      trailing: IconButton(
-                                        icon: const Icon(Icons.delete, color: Colors.red),
-                                        onPressed: () async {
-                                          final confirm = await showDialog<bool>(
-                                            context: context,
-                                            builder: (context) => AlertDialog(
-                                              backgroundColor: const Color(0xFFFDFDFD),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(20),
-                                              ),
-                                              title: const Text(
-                                                "삭제 확인",
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 20,
-                                                  color: Colors.black87,
-                                                ),
-                                              ),
-                                              content: Text(
-                                                '정말 "$title" 카테고리를 삭제할까요?',
-                                                style: const TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.black54,
-                                                ),
-                                              ),
-                                              actionsPadding: const EdgeInsets.only(right: 12, bottom: 8),
-                                              actions: [
-                                                TextButton(
-                                                  style: TextButton.styleFrom(
-                                                    foregroundColor: Colors.grey[700],
-                                                    textStyle: const TextStyle(fontSize: 15),
-                                                  ),
-                                                  child: const Text("취소"),
-                                                  onPressed: () => Navigator.pop(context, false),
-                                                ),
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor: Colors.redAccent,
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(10),
-                                                    ),
-                                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                                  ),
-                                                  child: const Text(
-                                                    "삭제",
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.edit, color: Colors.blueGrey),
+                                            onPressed: () async {
+                                              final TextEditingController editController =
+                                              TextEditingController(text: title);
+                                              final edited = await showDialog<String>(
+                                                context: context,
+                                                builder: (context) => AlertDialog(
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                                  backgroundColor: const Color(0xFFFDFDFD),
+                                                  title: const Text(
+                                                    "카테고리 이름 수정",
                                                     style: TextStyle(
+                                                      fontSize: 20,
                                                       fontWeight: FontWeight.bold,
-                                                      color: Colors.white,
+                                                      color: Colors.black87,
                                                     ),
                                                   ),
-                                                  onPressed: () => Navigator.pop(context, true),
+                                                  content: TextField(
+                                                    controller: editController,
+                                                    decoration: InputDecoration(
+                                                      hintText: "새 이름 입력",
+                                                      filled: true,
+                                                      fillColor: Colors.white,
+                                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                                      border: OutlineInputBorder(
+                                                        borderRadius: BorderRadius.circular(12),
+                                                        borderSide: const BorderSide(color: Colors.grey),
+                                                      ),
+                                                      focusedBorder: OutlineInputBorder(
+                                                        borderRadius: BorderRadius.circular(12),
+                                                        borderSide: const BorderSide(color: Colors.teal, width: 2),
+                                                      ),
+                                                    ),
+                                                    style: const TextStyle(fontSize: 16),
+                                                  ),
+                                                  actionsPadding: const EdgeInsets.only(right: 12, bottom: 10),
+                                                  actions: [
+                                                    TextButton(
+                                                      style: TextButton.styleFrom(
+                                                        foregroundColor: Colors.grey[700],
+                                                        textStyle: const TextStyle(fontSize: 15),
+                                                      ),
+                                                      child: const Text("취소"),
+                                                      onPressed: () => Navigator.pop(context),
+                                                    ),
+                                                    ElevatedButton(
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: Colors.teal,
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(10),
+                                                        ),
+                                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                                      ),
+                                                      child: const Text(
+                                                        "확인",
+                                                        style: TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                      onPressed: () {
+                                                        final newName = editController.text.trim();
+                                                        if (newName.isNotEmpty) {
+                                                          Navigator.pop(context, newName);
+                                                        }
+                                                      },
+                                                    ),
+                                                  ],
                                                 ),
-                                              ],
-                                            )
+                                              );
 
-                                          );
 
-                                          if (confirm == true) {
-                                            categoryList.removeWhere((item) => item.containsKey(title));
-                                            await ref.set({'titles': categoryList}, SetOptions(merge: true));
-                                            setState(() {});
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text('"$title" 삭제됨')),
-                                            );
-                                          }
-                                        },
+
+
+                                              if (edited != null && edited != title) {
+                                                // 기존 항목 수정
+                                                final oldItem = categoryList.firstWhere((e) => e.containsKey(title));
+                                                final content = oldItem[title];
+
+                                                categoryList.removeWhere((e) => e.containsKey(title));
+                                                categoryList.add({edited: content!});
+
+                                                await ref.update({'titles': categoryList});
+                                                setState(() {});
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('"$title" → "$edited" 이름 변경됨')),
+                                                );
+                                              }
+                                            },
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete, color: Colors.red),
+                                            onPressed: () async {
+                                              final confirm = await showDialog<bool>(
+                                                context: context,
+                                                builder: (context) => AlertDialog(
+                                                  title: const Text("삭제 확인"),
+                                                  content: Text('정말 "$title" 카테고리를 삭제할까요?'),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () => Navigator.pop(context, false),
+                                                      child: const Text("취소"),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () => Navigator.pop(context, true),
+                                                      child: const Text("삭제", style: TextStyle(color: Colors.red)),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+
+                                              if (confirm == true) {
+                                                categoryList.removeWhere((item) => item.containsKey(title));
+                                                await ref.set({'titles': categoryList}, SetOptions(merge: true));
+                                                setState(() {});
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('"$title" 삭제됨')),
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        ],
                                       ),
+
                                       onTap: () {
                                         Navigator.of(context).pop();
                                         Navigator.push(
@@ -302,8 +365,10 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                               );
                             },
                             icon: const Icon(Icons.add),
-                            label: const Text("생성"),
-                            style: TextButton.styleFrom(foregroundColor: Colors.teal),
+                            label: const Text("생성",
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            style: TextButton.styleFrom(foregroundColor: Colors.black),
                           ),
                         ],
                       );
@@ -333,7 +398,7 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
 
 
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.teal),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
       ),

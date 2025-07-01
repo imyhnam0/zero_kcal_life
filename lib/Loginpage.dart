@@ -70,12 +70,13 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Color bgColor = const Color(0xFF0E1C1F);
-    final Color titleColor = Colors.tealAccent;
+    final Color bgColor = const Color(0xFFE8F5E9); // 연한 연두색
+    final Color titleColor = Colors.teal.shade700;
+
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF122829),
+        backgroundColor: Colors.green,
         centerTitle: true,
         title: const Text(
           'Zero_kcal_life',
@@ -150,7 +151,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 24),
                     Text(
                       'made by Yunhyung',
-                      style: TextStyle(color: Colors.white60),
+                      style: TextStyle(color: Colors.black),
                     ),
                   ],
                 ),

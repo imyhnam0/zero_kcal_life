@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'GlobalsName.dart';
 
 class CalenderCategoryPage extends StatefulWidget {
   final String categoryTitle;
@@ -25,7 +26,7 @@ class _CalenderCategoryPageState extends State<CalenderCategoryPage> {
   Future<void> _loadCategoryDates() async {
     final ref = FirebaseFirestore.instance
         .collection('Users')
-        .doc('min@naver.com')
+        .doc(globalEmail)
         .collection('CalenderKategorie')
         .doc('Titles');
 
@@ -39,6 +40,7 @@ class _CalenderCategoryPageState extends State<CalenderCategoryPage> {
         final data = Map<String, dynamic>.from(item[widget.categoryTitle]);
         _startDateController.text = data['startDate'] ?? '';
         _endDateController.text = data['endDate'] ?? '';
+        print("✅ 카테고리 날짜 로드: ${_startDateController.text} ~ ${_endDateController.text}");
         if (_startDateController.text.isNotEmpty &&
             _endDateController.text.isNotEmpty) {
           _fetchCalenderData();
@@ -50,7 +52,7 @@ class _CalenderCategoryPageState extends State<CalenderCategoryPage> {
   Future<void> _saveDateRange() async {
     final ref = FirebaseFirestore.instance
         .collection('Users')
-        .doc('min@naver.com')
+        .doc(globalEmail)
         .collection('CalenderKategorie')
         .doc('Titles');
 
@@ -77,12 +79,22 @@ class _CalenderCategoryPageState extends State<CalenderCategoryPage> {
     final end = DateTime.parse(_endDateController.text);
     final snapshot = await FirebaseFirestore.instance
         .collection('Users')
-        .doc('min@naver.com')
-        .collection('Calender')
+        .doc(globalEmail)
+        .collection('TodayFood')
         .get();
 
     final allData = snapshot.docs
-        .map((doc) => {'date': doc.id, ...doc.data()})
+        .map((doc) {
+      final sum = doc.data()['Sum'] ?? {};
+      return {
+        'date': doc.id,
+        'kcal': sum['kcal'] ?? 0,
+        'carbs': sum['carbs'] ?? 0,
+        'protein': sum['protein'] ?? 0,
+        'fat': sum['fat'] ?? 0,
+        'isExpanded': false,
+      };
+    })
         .where((entry) {
       final date = DateTime.tryParse(entry['date']);
       return date != null &&
@@ -91,6 +103,7 @@ class _CalenderCategoryPageState extends State<CalenderCategoryPage> {
     })
         .toList()
       ..sort((a, b) => a['date'].compareTo(b['date']));
+
 
     setState(() {
       calenderData = allData;
@@ -168,7 +181,7 @@ class _CalenderCategoryPageState extends State<CalenderCategoryPage> {
       backgroundColor: const Color(0xFFF7FCFA),
       appBar: AppBar(
         title: Text(widget.categoryTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.grey[300],
+        backgroundColor: Colors.green,
         foregroundColor: Colors.teal,
         elevation: 1,
       ),
@@ -177,7 +190,7 @@ class _CalenderCategoryPageState extends State<CalenderCategoryPage> {
         child: Column(
           children: [
             Card(
-              color: Colors.grey[200],
+              color: Colors.green[100],
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Padding(
@@ -212,25 +225,30 @@ class _CalenderCategoryPageState extends State<CalenderCategoryPage> {
                 itemBuilder: (context, index) {
                   final entry = calenderData[index];
                   return Card(
-                    color: Colors.grey[200],
+                    color: Colors.green[100],
                     elevation: 2,
                     margin: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Column(
+                      children: [
+                        ListTile(
+                          title: Text(
                             entry['date'],
                             style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87),
+                                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
                           ),
-                          const SizedBox(height: 8),
-                          Wrap(
+                          trailing: Icon(
+                            entry['isExpanded'] ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                          ),
+                          onTap: () {
+                            setState(() {
+                              calenderData[index]['isExpanded'] = !calenderData[index]['isExpanded'];
+                            });
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Wrap(
                             children: [
                               _buildMacroTag("칼로리", entry['kcal'], Colors.redAccent),
                               _buildMacroTag("탄수화물", entry['carbs'], Colors.orange),
@@ -238,10 +256,50 @@ class _CalenderCategoryPageState extends State<CalenderCategoryPage> {
                               _buildMacroTag("지방", entry['fat'], Colors.pinkAccent),
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+                        if (entry['isExpanded'] == true)
+                          FutureBuilder<DocumentSnapshot>(
+                            future: FirebaseFirestore.instance
+                                .collection('Users')
+                                .doc(globalEmail)
+                                .collection('TodayFood')
+                                .doc(entry['date'])
+                                .get(),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData || !snapshot.data!.exists) {
+                                return const Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text("MEAL 데이터 없음"),
+                                );
+                              }
+                              final meals = snapshot.data!.data()! as Map<String, dynamic>;
+                              final mealKeys = meals.keys.where((k) => k != 'Sum').toList();
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: mealKeys.map((mealKey) {
+                                  final items = List<Map<String, dynamic>>.from(meals[mealKey]);
+                                  return Padding(
+                                    padding: const EdgeInsets.only(left: 16, top: 8, bottom: 4),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text("🍽️ $mealKey", style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        ...items.map((item) => Padding(
+                                          padding: const EdgeInsets.only(left: 8.0, top: 2),
+                                          child: Text("- ${item['name']} ${item['gram']}g"),
+                                        )),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
+                      ],
                     ),
                   );
+
                 },
               ),
             ),

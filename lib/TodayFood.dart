@@ -37,6 +37,8 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
   }
 
 
+
+
   @override
 
   Widget build(BuildContext context) {
@@ -57,7 +59,7 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("Today's Food"),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.green,
         centerTitle: true,
         elevation: 1,
         titleTextStyle: const TextStyle(
@@ -66,8 +68,8 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
           fontWeight: FontWeight.bold,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.teal),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context, true),
         ),
         actions: [
           Padding(
@@ -459,7 +461,12 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
         prompt += "- $name ${gram}g\n";
       }
     });
-    prompt += "\n총 칼로리= , 총 탄수화물= , 총 단백질= , 총 지방= 형식으로 요약해서 알려줘.";
+    prompt += "\n\n예시는 다음과 같은 형식으로 작성해주세요:\n"
+        "총 칼로리: 345kcal\n"
+        "총 탄수화물: 40g\n"
+        "총 단백질: 35g\n"
+        "총 지방: 4.2g";
+
 
     // 3. HTTP 요청 보내기
     final url = Uri.parse(
@@ -487,13 +494,65 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
       print("✅ Gemini 응답:\n$text");
 
       // 정규식으로 수치 추출
-      final carbMatch = RegExp(r'총 탄수화물\s*=\s*([\d.]+)').firstMatch(text);
-      final proteinMatch = RegExp(r'총 단백질\s*=\s*([\d.]+)').firstMatch(text);
-      final fatMatch = RegExp(r'총 지방\s*=\s*([\d.]+)').firstMatch(text);
-      final kcalMatch = RegExp(r'총 칼로리\s*=\s*([\d.]+)').firstMatch(text);
+      final kcalMatch = RegExp(r'총\s*칼로리.*?([\d.]+)\s*kcal').firstMatch(text);
+      final carbMatch = RegExp(r'총\s*탄수화물.*?([\d.]+)\s*g').firstMatch(text);
+      final proteinMatch = RegExp(r'총\s*단백질.*?([\d.]+)\s*g').firstMatch(text);
+      final fatMatch = RegExp(r'총\s*지방.*?([\d.]+)\s*g').firstMatch(text);
+
+      // 전부 null일 경우 오류 팝업
+      if (kcalMatch == null && carbMatch == null && proteinMatch == null && fatMatch == null) {
+        if (context.mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              backgroundColor: Colors.deepOrange.shade50,
+              title: Row(
+                children: const [
+                  Icon(Icons.warning_amber_rounded, color: Colors.deepOrange, size: 28),
+                  SizedBox(width: 8),
+                  Text(
+                    '오류 발생',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Colors.deepOrange,
+                    ),
+                  ),
+                ],
+              ),
+              content: const Text(
+                'Gemini에서 올바른 영양 정보를 받아오지 못했습니다.\n다시 시도해 주세요.',
+                style: TextStyle(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.deepOrange,
+                    textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  child: const Text('확인'),
+                ),
+              ],
+            ),
+          );
+
+        }
+        return;
+      }
 
 
 
+
+      print("✅ 추출된 값: "
+          "탄수화물=${carbMatch?.group(1)}, "
+          "단백질=${proteinMatch?.group(1)}, "
+          "지방=${fatMatch?.group(1)}, "
+          "칼로리=${kcalMatch?.group(1)}");
+      // 값이 모두 추출되었는지 확인
 
       if (carbMatch != null && proteinMatch != null && fatMatch != null && kcalMatch != null) {
         setState(() {
