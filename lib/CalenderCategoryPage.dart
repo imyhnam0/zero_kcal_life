@@ -287,7 +287,7 @@ class _CalenderCategoryPageState extends State<CalenderCategoryPage> {
                                         Text("🍽️ $mealKey", style: const TextStyle(fontWeight: FontWeight.bold)),
                                         ...items.map((item) => Padding(
                                           padding: const EdgeInsets.only(left: 8.0, top: 2),
-                                          child: Text("- ${item['name']} ${item['gram']}g"),
+                                          child: Text("- ${item['name']} ${item['gram']}"),
                                         )),
                                       ],
                                     ),

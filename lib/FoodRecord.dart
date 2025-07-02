@@ -676,17 +676,15 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                           ),
                           ...items.map((item) {
                             final name = item['name'] ?? '';
-                            final gram = item['gram'];
-                            final gramValue = gram is int
-                                ? gram
-                                : int.tryParse(gram.toString()) ?? 0;
+                            final gram = item['gram'] ?? '';
+
 
                             return Padding(
                               padding: const EdgeInsets.only(
                                 left: 10.0,
                                 top: 4,
                               ),
-                              child: Text("- $name ${gramValue}g"),
+                              child: Text("- $name ${gram}"),
                             );
                           }),
                         ],

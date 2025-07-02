@@ -14,9 +14,7 @@ import 'package:pie_chart/pie_chart.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -97,9 +95,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return const Scaffold(
       backgroundColor: Color(0xFFF9F9F9),
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
+      body: Center(child: CircularProgressIndicator()),
     );
   }
 }
@@ -155,12 +151,14 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         centerTitle: true,
         elevation: 0,
-        title: const Text('Zero_kcal_life',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            )),
+        title: const Text(
+          'Zero_kcal_life',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.local_dining_rounded, color: Colors.teal),
           onPressed: () {},
@@ -177,61 +175,103 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildSummaryCard(),
-            const SizedBox(height: 20),
-            _buildMainButton(
-              context,
-              icon: Icons.restaurant_menu,
-              label: '오늘의 식단',
-              color: Colors.teal,
-              onTap: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const TodayFoodPage()),
-                );
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFFB2EBF2), // 진한 민트 (cyan 계열)
+              Color(0xFFA5D6A7), // 진한 연두 (light green 계열)
+              Color(0xFFF1F8E9), // 연초록 마무리
+            ],
 
-                if (result == true) {
-                  _loadTodaySummary(); // 저장했으면 다시 요약 갱신
-                }
-              },
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '환영합니다, $globalUserName 님! 👋',
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.teal.shade900),
+              ),
+              Text(
+                DateFormat('yyyy년 MM월 dd일 EEEE').format(DateTime.now()),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
+                  color: Colors.teal.shade800,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(0.5, 0.5),
+                      blurRadius: 1,
+                      color: Colors.black26,
+                    ),
+                  ],
+                ),
+              ),
 
-            ),
-            const SizedBox(height: 40),
-            _buildMainButton(
-              context,
-              icon: Icons.edit_note_rounded,
-              label: '식단 기록',
-              color: Colors.lightGreen,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const FoodRecordPage()),
-                );
-              },
-            ),
-            const SizedBox(height: 40),
-            _buildMainButton(
-              context,
-              icon: Icons.notes_rounded,
-              label: '메모장',
-              color: Colors.orange,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MemoPage()),
-                );
-              },
-            ),
-          ],
+              SizedBox(height: 20),
+
+
+              _buildSummaryCard(),
+              const SizedBox(height: 40),
+              _buildMainButton(
+                context,
+                icon: Icons.restaurant_menu,
+                label: '오늘의 식단',
+                color: Colors.teal,
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TodayFoodPage(),
+                    ),
+                  );
+
+                  if (result == true) {
+                    _loadTodaySummary(); // 저장했으면 다시 요약 갱신
+                  }
+                },
+              ),
+              const SizedBox(height: 40),
+              _buildMainButton(
+                context,
+                icon: Icons.edit_note_rounded,
+                label: '식단 기록',
+                color: Colors.lightGreen,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FoodRecordPage(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 40),
+              _buildMainButton(
+                context,
+                icon: Icons.notes_rounded,
+                label: '메모장',
+                color: Colors.orange,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MemoPage()),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
   Widget _buildSummaryCard() {
     final Map<String, double> dataMap = {
       "탄수화물": carbs.toDouble(),
@@ -249,6 +289,7 @@ class _MyHomePageState extends State<MyHomePage> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
+
         color: Colors.teal.shade50,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.teal.shade100),
@@ -288,6 +329,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
+
   Widget _buildLegendItem(String label, String value, Color color) {
     return Row(
       children: [
@@ -297,22 +339,18 @@ class _MyHomePageState extends State<MyHomePage> {
           "$label: ",
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 15),
-        ),
+        Text(value, style: const TextStyle(fontSize: 15)),
       ],
     );
   }
 
-
   Widget _buildMainButton(
-      BuildContext context, {
-        required IconData icon,
-        required String label,
-        required Color color,
-        required VoidCallback onTap,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -349,4 +387,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
