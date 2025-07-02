@@ -178,7 +178,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       body: Padding(
-
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

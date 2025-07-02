@@ -16,12 +16,7 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
 
-  Map<String, int> macros = {
-    'cal': 0,
-    'carbs': 0,
-    'protein': 0,
-    'fat': 0,
-  };
+  Map<String, int> macros = {'cal': 0, 'carbs': 0, 'protein': 0, 'fat': 0};
 
   @override
   void initState() {
@@ -29,8 +24,6 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
 
     _loadMacrosForDate(_selectedDay);
   }
-
-
 
   Future<void> _loadMacrosForDate(DateTime date) async {
     final formattedDate = DateFormat('yyyy-MM-dd').format(date);
@@ -62,7 +55,6 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: const Color(0xFFF2FDFC),
       appBar: AppBar(
@@ -93,8 +85,11 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                 final raw = data['titles'];
                 if (raw is List) {
                   categoryList = raw
-                      .map((e) => Map<String, Map<String, dynamic>>.from(
-                      Map<String, dynamic>.from(e)))
+                      .map(
+                        (e) => Map<String, Map<String, dynamic>>.from(
+                          Map<String, dynamic>.from(e),
+                        ),
+                      )
                       .toList();
                 }
               }
@@ -107,8 +102,11 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                         backgroundColor: Colors.green[100],
                         title: const Text(
                           "카테고리 목록",
-                          style: TextStyle(fontWeight: FontWeight.bold
-                          , fontSize: 20, color: Colors.black),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                            color: Colors.black,
+                          ),
                         ),
 
                         content: SizedBox(
@@ -127,31 +125,50 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                                   return Card(
                                     color: const Color(0xFFE8F5E9),
                                     shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12)),
-                                    margin: const EdgeInsets.symmetric(vertical: 6),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: 6,
+                                    ),
                                     child: ListTile(
                                       title: Text(
                                         title,
-                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                       trailing: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           IconButton(
-                                            icon: const Icon(Icons.edit, color: Colors.blueGrey),
+                                            icon: const Icon(
+                                              Icons.edit,
+                                              color: Colors.blueGrey,
+                                            ),
                                             onPressed: () async {
-                                              final TextEditingController editController =
-                                              TextEditingController(text: title);
+                                              final TextEditingController
+                                              editController =
+                                                  TextEditingController(
+                                                    text: title,
+                                                  );
                                               final edited = await showDialog<String>(
                                                 context: context,
                                                 builder: (context) => AlertDialog(
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                                  backgroundColor: const Color(0xFFFDFDFD),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          20,
+                                                        ),
+                                                  ),
+                                                  backgroundColor: const Color(
+                                                    0xFFFDFDFD,
+                                                  ),
                                                   title: const Text(
                                                     "카테고리 이름 수정",
                                                     style: TextStyle(
                                                       fontSize: 20,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                       color: Colors.black87,
                                                     ),
                                                   ),
@@ -161,47 +178,97 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                                                       hintText: "새 이름 입력",
                                                       filled: true,
                                                       fillColor: Colors.white,
-                                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                                      contentPadding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 16,
+                                                            vertical: 14,
+                                                          ),
                                                       border: OutlineInputBorder(
-                                                        borderRadius: BorderRadius.circular(12),
-                                                        borderSide: const BorderSide(color: Colors.grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              12,
+                                                            ),
+                                                        borderSide:
+                                                            const BorderSide(
+                                                              color:
+                                                                  Colors.grey,
+                                                            ),
                                                       ),
-                                                      focusedBorder: OutlineInputBorder(
-                                                        borderRadius: BorderRadius.circular(12),
-                                                        borderSide: const BorderSide(color: Colors.teal, width: 2),
-                                                      ),
+                                                      focusedBorder:
+                                                          OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  12,
+                                                                ),
+                                                            borderSide:
+                                                                const BorderSide(
+                                                                  color: Colors
+                                                                      .teal,
+                                                                  width: 2,
+                                                                ),
+                                                          ),
                                                     ),
-                                                    style: const TextStyle(fontSize: 16),
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                    ),
                                                   ),
-                                                  actionsPadding: const EdgeInsets.only(right: 12, bottom: 10),
+                                                  actionsPadding:
+                                                      const EdgeInsets.only(
+                                                        right: 12,
+                                                        bottom: 10,
+                                                      ),
                                                   actions: [
                                                     TextButton(
-                                                      style: TextButton.styleFrom(
-                                                        foregroundColor: Colors.grey[700],
-                                                        textStyle: const TextStyle(fontSize: 15),
-                                                      ),
+                                                      style:
+                                                          TextButton.styleFrom(
+                                                            foregroundColor:
+                                                                Colors
+                                                                    .grey[700],
+                                                            textStyle:
+                                                                const TextStyle(
+                                                                  fontSize: 15,
+                                                                ),
+                                                          ),
                                                       child: const Text("취소"),
-                                                      onPressed: () => Navigator.pop(context),
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            context,
+                                                          ),
                                                     ),
                                                     ElevatedButton(
                                                       style: ElevatedButton.styleFrom(
-                                                        backgroundColor: Colors.teal,
+                                                        backgroundColor:
+                                                            Colors.teal,
                                                         shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(10),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                10,
+                                                              ),
                                                         ),
-                                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 20,
+                                                              vertical: 10,
+                                                            ),
                                                       ),
                                                       child: const Text(
                                                         "확인",
                                                         style: TextStyle(
-                                                          fontWeight: FontWeight.bold,
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                           color: Colors.white,
                                                         ),
                                                       ),
                                                       onPressed: () {
-                                                        final newName = editController.text.trim();
-                                                        if (newName.isNotEmpty) {
-                                                          Navigator.pop(context, newName);
+                                                        final newName =
+                                                            editController.text
+                                                                .trim();
+                                                        if (newName
+                                                            .isNotEmpty) {
+                                                          Navigator.pop(
+                                                            context,
+                                                            newName,
+                                                          );
                                                         }
                                                       },
                                                     ),
@@ -209,52 +276,95 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                                                 ),
                                               );
 
-
-
-
-                                              if (edited != null && edited != title) {
+                                              if (edited != null &&
+                                                  edited != title) {
                                                 // 기존 항목 수정
-                                                final oldItem = categoryList.firstWhere((e) => e.containsKey(title));
+                                                final oldItem = categoryList
+                                                    .firstWhere(
+                                                      (e) =>
+                                                          e.containsKey(title),
+                                                    );
                                                 final content = oldItem[title];
 
-                                                categoryList.removeWhere((e) => e.containsKey(title));
-                                                categoryList.add({edited: content!});
+                                                categoryList.removeWhere(
+                                                  (e) => e.containsKey(title),
+                                                );
+                                                categoryList.add({
+                                                  edited: content!,
+                                                });
 
-                                                await ref.update({'titles': categoryList});
+                                                await ref.update({
+                                                  'titles': categoryList,
+                                                });
                                                 setState(() {});
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('"$title" → "$edited" 이름 변경됨')),
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      '"$title" → "$edited" 이름 변경됨',
+                                                    ),
+                                                  ),
                                                 );
                                               }
                                             },
                                           ),
                                           IconButton(
-                                            icon: const Icon(Icons.delete, color: Colors.red),
+                                            icon: const Icon(
+                                              Icons.delete,
+                                              color: Colors.red,
+                                            ),
                                             onPressed: () async {
                                               final confirm = await showDialog<bool>(
                                                 context: context,
                                                 builder: (context) => AlertDialog(
                                                   title: const Text("삭제 확인"),
-                                                  content: Text('정말 "$title" 카테고리를 삭제할까요?'),
+                                                  content: Text(
+                                                    '정말 "$title" 카테고리를 삭제할까요?',
+                                                  ),
                                                   actions: [
                                                     TextButton(
-                                                      onPressed: () => Navigator.pop(context, false),
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            context,
+                                                            false,
+                                                          ),
                                                       child: const Text("취소"),
                                                     ),
                                                     TextButton(
-                                                      onPressed: () => Navigator.pop(context, true),
-                                                      child: const Text("삭제", style: TextStyle(color: Colors.red)),
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            context,
+                                                            true,
+                                                          ),
+                                                      child: const Text(
+                                                        "삭제",
+                                                        style: TextStyle(
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
                                               );
 
                                               if (confirm == true) {
-                                                categoryList.removeWhere((item) => item.containsKey(title));
-                                                await ref.set({'titles': categoryList}, SetOptions(merge: true));
+                                                categoryList.removeWhere(
+                                                  (item) =>
+                                                      item.containsKey(title),
+                                                );
+                                                await ref.set({
+                                                  'titles': categoryList,
+                                                }, SetOptions(merge: true));
                                                 setState(() {});
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('"$title" 삭제됨')),
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      '"$title" 삭제됨',
+                                                    ),
+                                                  ),
                                                 );
                                               }
                                             },
@@ -267,7 +377,10 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => CalenderCategoryPage(categoryTitle: title),
+                                            builder: (context) =>
+                                                CalenderCategoryPage(
+                                                  categoryTitle: title,
+                                                ),
                                           ),
                                         );
                                       },
@@ -280,7 +393,8 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                         actions: [
                           TextButton.icon(
                             onPressed: () {
-                              final TextEditingController inputController = TextEditingController();
+                              final TextEditingController inputController =
+                                  TextEditingController();
 
                               showDialog(
                                 context: context,
@@ -305,33 +419,53 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                                         filled: true,
                                         fillColor: Colors.white,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: const BorderSide(color: Colors.grey),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: Colors.grey,
+                                          ),
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: const BorderSide(color: Colors.teal, width: 2),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: Colors.teal,
+                                            width: 2,
+                                          ),
                                         ),
                                       ),
                                       style: const TextStyle(fontSize: 16),
                                     ),
-                                    actionsPadding: const EdgeInsets.only(right: 12, bottom: 10),
+                                    actionsPadding: const EdgeInsets.only(
+                                      right: 12,
+                                      bottom: 10,
+                                    ),
                                     actions: [
                                       TextButton(
                                         style: TextButton.styleFrom(
                                           foregroundColor: Colors.grey[700],
-                                          textStyle: const TextStyle(fontSize: 15),
+                                          textStyle: const TextStyle(
+                                            fontSize: 15,
+                                          ),
                                         ),
                                         child: const Text("취소"),
-                                        onPressed: () => Navigator.of(context).pop(),
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(),
                                       ),
                                       ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.teal,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
                                           ),
-                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 10,
+                                          ),
                                         ),
                                         child: const Text(
                                           "저장",
@@ -341,21 +475,35 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                                           ),
                                         ),
                                         onPressed: () async {
-                                          final input = inputController.text.trim();
+                                          final input = inputController.text
+                                              .trim();
                                           if (input.isEmpty) return;
 
-                                          final exists = categoryList.any((item) => item.containsKey(input));
+                                          final exists = categoryList.any(
+                                            (item) => item.containsKey(input),
+                                          );
                                           if (!exists) {
                                             categoryList.add({
-                                              input: {"startDate": "", "endDate": ""},
+                                              input: {
+                                                "startDate": "",
+                                                "endDate": "",
+                                              },
                                             });
-                                            await ref.set({'titles': categoryList}, SetOptions(merge: true));
+                                            await ref.set({
+                                              'titles': categoryList,
+                                            }, SetOptions(merge: true));
                                             setState(() {});
                                           }
 
                                           Navigator.of(context).pop();
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('"$input" 카테고리 저장됨')),
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                '"$input" 카테고리 저장됨',
+                                              ),
+                                            ),
                                           );
                                         },
                                       ),
@@ -365,10 +513,16 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                               );
                             },
                             icon: const Icon(Icons.add),
-                            label: const Text("생성",
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            label: const Text(
+                              "생성",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
-                            style: TextButton.styleFrom(foregroundColor: Colors.black),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.black,
+                            ),
                           ),
                         ],
                       );
@@ -376,9 +530,6 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                   );
                 },
               );
-
-
-
             },
             style: TextButton.styleFrom(
               backgroundColor: Colors.teal,
@@ -389,76 +540,164 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
             ),
             child: const Text(
               '카테고리',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
-
-
-
 
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Column(
-        children: [
-          TableCalendar(
-            focusedDay: _focusedDay,
-            firstDay: DateTime.utc(2020, 1, 1),
-            lastDay: DateTime.utc(2030, 12, 31),
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: (selected, focused) {
-              setState(() {
-                _selectedDay = selected;
-                _focusedDay = focused;
-              });
-              _loadMacrosForDate(selected); // 🔥 날짜 선택 시 해당 데이터 로드
-            },
-            calendarStyle: const CalendarStyle(
-              todayDecoration: BoxDecoration(
-                color: Colors.orangeAccent,
-                shape: BoxShape.circle,
-              ),
-              selectedDecoration: BoxDecoration(
-                color: Colors.teal,
-                shape: BoxShape.circle,
-              ),
-              defaultTextStyle: TextStyle(color: Colors.black87),
-            ),
-            headerStyle: const HeaderStyle(
-              formatButtonVisible: false,
-              titleCentered: true,
-              titleTextStyle: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-          ),
-          const Divider(thickness: 1),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Text(
-                  DateFormat('yyyy년 MM월 dd일').format(_selectedDay),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TableCalendar(
+              focusedDay: _focusedDay,
+              firstDay: DateTime.utc(2020, 1, 1),
+              lastDay: DateTime.utc(2030, 12, 31),
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+              onDaySelected: (selected, focused) {
+                setState(() {
+                  _selectedDay = selected;
+                  _focusedDay = focused;
+                });
+                _loadMacrosForDate(selected); // 🔥 날짜 선택 시 해당 데이터 로드
+              },
+              calendarStyle: const CalendarStyle(
+                todayDecoration: BoxDecoration(
+                  color: Colors.orangeAccent,
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(height: 16),
-                _buildStatTile('총 칼로리', macros['cal']!, Icons.local_fire_department, Colors.redAccent),
-                const SizedBox(height: 8),
-                _buildStatTile('탄수화물', macros['carbs']!, Icons.rice_bowl, Colors.orange),
-                _buildStatTile('단백질', macros['protein']!, Icons.egg_alt, Colors.green),
-                _buildStatTile('지방', macros['fat']!, Icons.water_drop, Colors.pinkAccent),
-              ],
+                selectedDecoration: BoxDecoration(
+                  color: Colors.teal,
+                  shape: BoxShape.circle,
+                ),
+                defaultTextStyle: TextStyle(color: Colors.black87),
+              ),
+              headerStyle: const HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+                titleTextStyle: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
             ),
-          )
-        ],
+            const Divider(thickness: 1),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Text(
+                    DateFormat('yyyy년 MM월 dd일').format(_selectedDay),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildStatTile(
+                    '총 칼로리',
+                    macros['cal']!,
+                    Icons.local_fire_department,
+                    Colors.redAccent,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildStatTile(
+                    '탄수화물',
+                    macros['carbs']!,
+                    Icons.rice_bowl,
+                    Colors.orange,
+                  ),
+                  _buildStatTile(
+                    '단백질',
+                    macros['protein']!,
+                    Icons.egg_alt,
+                    Colors.green,
+                  ),
+                  _buildStatTile(
+                    '지방',
+                    macros['fat']!,
+                    Icons.water_drop,
+                    Colors.pinkAccent,
+                  ),
+                ],
+              ),
+            ),
+            FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('Users')
+                  .doc(globalEmail)
+                  .collection('TodayFood')
+                  .doc(DateFormat('yyyy-MM-dd').format(_selectedDay))
+                  .get(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData || !snapshot.data!.exists) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text("📭 오늘의 식단 정보가 없습니다."),
+                  );
+                }
+
+                final data = snapshot.data!.data()! as Map<String, dynamic>;
+                final mealKeys = data.keys
+                    .where((k) => k != 'Sum')
+                    .toList()
+                  ..sort();
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: mealKeys.map((mealKey) {
+                    final items = List<Map<String, dynamic>>.from(
+                      data[mealKey],
+                    );
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        left: 20.0,
+                        bottom: 10,
+                        top: 10,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "🍽️ $mealKey",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          ...items.map((item) {
+                            final name = item['name'] ?? '';
+                            final gram = item['gram'];
+                            final gramValue = gram is int
+                                ? gram
+                                : int.tryParse(gram.toString()) ?? 0;
+
+                            return Padding(
+                              padding: const EdgeInsets.only(
+                                left: 10.0,
+                                top: 4,
+                              ),
+                              child: Text("- $name ${gramValue}g"),
+                            );
+                          }),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
