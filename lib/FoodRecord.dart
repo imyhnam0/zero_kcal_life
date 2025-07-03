@@ -15,14 +15,39 @@ class FoodRecordPage extends StatefulWidget {
 class _FoodRecordPageState extends State<FoodRecordPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
+  Map<DateTime, int> kcalPerDate = {};
 
   Map<String, int> macros = {'cal': 0, 'carbs': 0, 'protein': 0, 'fat': 0};
 
   @override
   void initState() {
     super.initState();
-
     _loadMacrosForDate(_selectedDay);
+    _loadAllKcalData();
+  }
+
+  Future<void> _loadAllKcalData() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(globalEmail)
+        .collection('TodayFood')
+        .get();
+
+    Map<DateTime, int> loadedKcal = {};
+    for (var doc in snapshot.docs) {
+      final dateStr = doc.id;
+      final sum = doc['Sum'] ?? {};
+      final kcal = sum['kcal'] ?? 0;
+
+      try {
+        final date = DateFormat('yyyy-MM-dd').parse(dateStr);
+        loadedKcal[DateTime(date.year, date.month, date.day)] = kcal;
+      } catch (_) {}
+    }
+
+    setState(() {
+      kcalPerDate = loadedKcal;
+    });
   }
 
   Future<void> _loadMacrosForDate(DateTime date) async {
@@ -318,12 +343,46 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                                               final confirm = await showDialog<bool>(
                                                 context: context,
                                                 builder: (context) => AlertDialog(
-                                                  title: const Text("삭제 확인"),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          16,
+                                                        ),
+                                                  ),
+                                                  backgroundColor:
+                                                      Colors.green[100],
+                                                  title: const Text(
+                                                    "삭제 확인",
+                                                    style: TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
                                                   content: Text(
                                                     '정말 "$title" 카테고리를 삭제할까요?',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      color: Colors.grey[800],
+                                                    ),
                                                   ),
+                                                  actionsAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
                                                   actions: [
                                                     TextButton(
+                                                      style:
+                                                          TextButton.styleFrom(
+                                                            foregroundColor:
+                                                                Colors.teal,
+                                                            textStyle:
+                                                                const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                ),
+                                                          ),
                                                       onPressed: () =>
                                                           Navigator.pop(
                                                             context,
@@ -332,6 +391,17 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                                                       child: const Text("취소"),
                                                     ),
                                                     TextButton(
+                                                      style:
+                                                          TextButton.styleFrom(
+                                                            foregroundColor:
+                                                                Colors.red,
+                                                            textStyle:
+                                                                const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                ),
+                                                          ),
                                                       onPressed: () =>
                                                           Navigator.pop(
                                                             context,
@@ -588,6 +658,54 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                   fontSize: 18,
                 ),
               ),
+              calendarBuilders: CalendarBuilders(
+                defaultBuilder: (context, day, focusedDay) {
+                  final kcal =
+                      kcalPerDate[DateTime(day.year, day.month, day.day)];
+
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('${day.day}'),
+                      if (kcal != null)
+                        Text(
+                          '$kcal kcal',
+                          style: TextStyle(fontSize: 10, color: Colors.teal),
+                        ),
+                    ],
+                  );
+                },
+                todayBuilder: (context, day, focusedDay) {
+                  final kcal =
+                      kcalPerDate[DateTime(day.year, day.month, day.day)];
+
+                  return Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.orangeAccent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${day.day}',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          if (kcal != null)
+                            Text(
+                              '$kcal kcal',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.white,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
             const Divider(thickness: 1),
             Padding(
@@ -647,9 +765,7 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                 }
 
                 final data = snapshot.data!.data()! as Map<String, dynamic>;
-                final mealKeys = data.keys
-                    .where((k) => k != 'Sum')
-                    .toList()
+                final mealKeys = data.keys.where((k) => k != 'Sum').toList()
                   ..sort();
 
                 return Column(
@@ -677,7 +793,6 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
                           ...items.map((item) {
                             final name = item['name'] ?? '';
                             final gram = item['gram'] ?? '';
-
 
                             return Padding(
                               padding: const EdgeInsets.only(

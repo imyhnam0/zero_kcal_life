@@ -152,7 +152,7 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
                         const SizedBox(height: 10),
                         _buildLegendItem(
                           color: colorList[3],
-                          label: '칼로리: $kcal',
+                          label: '칼로리: $kcal kcal',
                         ),
                         const SizedBox(height: 10),
                         _buildLegendItem(
@@ -326,7 +326,13 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
         const SizedBox(width: 8),
         Text(
           label,
-          style: const TextStyle(color: Colors.black87, fontSize: 16),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+            fontFamily: 'Roboto', // 또는 'NotoSans'
+            color: Colors.black87,
+          ),
         ),
       ],
     );
@@ -639,17 +645,7 @@ class _TodayFoodPageState extends State<TodayFoodPage> {
                 'kcal': kcal,
               },
             });
-        await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(globalEmail)
-            .collection('Calender')
-            .doc(today)
-            .set({
-              'carbs': carbs,
-              'protein': protein,
-              'fat': fat,
-              'kcal': kcal,
-            });
+
       }
     } else {
       print("❌ 오류: ${response.statusCode}\n${response.body}");
