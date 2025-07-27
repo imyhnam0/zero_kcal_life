@@ -11,6 +11,7 @@ import 'MyInfo.dart';
 import 'GlobalsName.dart';
 import 'package:intl/intl.dart';
 import 'package:pie_chart/pie_chart.dart';
+import 'bodyweight.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -237,7 +238,22 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 SizedBox(height: 10),
                 _buildSummaryCard(),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
+                _buildMainButton(
+                  context,
+                  icon: Icons.monitor_weight,
+                  label: '몸무게 기록',
+                  color: Colors.red,
+                  onTap: () async {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BodyWeightPage(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 10),
                 _buildMainButton(
                   context,
                   icon: Icons.restaurant_menu,
@@ -256,7 +272,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     }
                   },
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 10),
                 _buildMainButton(
                   context,
                   icon: Icons.edit_note_rounded,
@@ -271,7 +287,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     );
                   },
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 10),
                 _buildMainButton(
                   context,
                   icon: Icons.notes_rounded,
@@ -406,7 +422,19 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ),
                             ),
-                            _buildInputField("칼로리 (kcal)", kcalController),
+                            Container(
+                              alignment: Alignment.centerLeft,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Text(
+                                "칼로리: ${kcalController.text} kcal",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
+
                             _buildInputField("탄수화물 (g)", carbController),
                             _buildInputField("단백질 (g)", proteinController),
                             _buildInputField("지방 (g)", fatController),
@@ -430,14 +458,14 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ),
                           onPressed: () async {
-                            final int kcal =
-                                int.tryParse(kcalController.text) ?? 0;
+
                             final int carbs =
                                 int.tryParse(carbController.text) ?? 0;
                             final int protein =
                                 int.tryParse(proteinController.text) ?? 0;
                             final int fat =
                                 int.tryParse(fatController.text) ?? 0;
+                            final int kcal = (carbs * 4) + (protein * 4) + (fat * 9);
 
                             await FirebaseFirestore.instance
                                 .collection('Users')
@@ -452,6 +480,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                 }, SetOptions(merge: true));
 
                             Navigator.pop(context);
+
+                            _loadTodaySummary();
+
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text("목표가 저장되었습니다!")),
                             );

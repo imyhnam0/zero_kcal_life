@@ -53,6 +53,12 @@ class _SignUpPageState extends State<SignUpPage> {
           'friends': [],
           'name': _nameController.text.trim(),
           'friendRequests': [],
+          'target': {
+            'kcal': 0,
+            'carbs': 0,
+            'protein': 0,
+            'fat': 0,
+          },
         });
 
         await _firestore.collection('Info').doc('$email').set({
