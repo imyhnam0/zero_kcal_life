@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'GlobalsName.dart';
 import 'CalenderCategoryPage.dart';
+import 'package:pie_chart/pie_chart.dart';
 
 class FoodRecordPage extends StatefulWidget {
   const FoodRecordPage({super.key});
@@ -708,107 +709,247 @@ class _FoodRecordPageState extends State<FoodRecordPage> {
               ),
             ),
             const Divider(thickness: 1),
+
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    DateFormat('yyyy년 MM월 dd일').format(_selectedDay),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    // 🔹 왼쪽: 차트
+                    children: [
+                      PieChart(
+                        dataMap: {
+                          "탄수화물": macros['carbs']!.toDouble(),
+                          "단백질": macros['protein']!.toDouble(),
+                          "지방": macros['fat']!.toDouble(),
+                        },
+                        animationDuration: const Duration(milliseconds: 1000),
+                        chartRadius: 120,
+                        chartType: ChartType.ring,
+                        ringStrokeWidth: 22,
+                        colorList: [
+                          Colors.orange,
+                          Colors.green,
+                          Colors.pinkAccent,
+                        ],
+                        centerText: "${macros['cal']} kcal",
+                        centerTextStyle: const TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        chartValuesOptions: const ChartValuesOptions(
+                          showChartValuesInPercentage: true,
+                          showChartValueBackground: false,
+                          decimalPlaces: 0,
+                          chartValueStyle: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        legendOptions: const LegendOptions(showLegends: false),
+                      ),
+                      const SizedBox(height: 40),
+
+                      // 🔹 차트 아래 버튼
+                      ElevatedButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+
+                                content: SizedBox(
+                                  width: double.maxFinite,
+                                  child: FutureBuilder<DocumentSnapshot>(
+                                    future: FirebaseFirestore.instance
+                                        .collection('Users')
+                                        .doc(globalEmail)
+                                        .collection('TodayFood')
+                                        .doc(DateFormat('yyyy-MM-dd').format(_selectedDay))
+                                        .get(),
+                                    builder: (context, snapshot) {
+                                      if (!snapshot.hasData || !snapshot.data!.exists) {
+                                        return const Padding(
+                                          padding: EdgeInsets.all(16),
+                                          child: Text("📭 오늘의 식단 정보가 없습니다."),
+                                        );
+                                      }
+
+                                      final data = snapshot.data!.data()! as Map<String, dynamic>;
+                                      final mealKeys = data.keys.where((k) => k != 'Sum').toList()
+                                        ..sort();
+
+                                      return SingleChildScrollView(
+                                        child: Column(
+                                          children: mealKeys.map((mealKey) {
+                                            final items = List<Map<String, dynamic>>.from(data[mealKey]);
+
+                                            return Card(
+                                              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(16),
+                                              ),
+                                              elevation: 3,
+                                              color: Colors.grey[50],
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(16),
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    // Meal 타이틀
+                                                    Row(
+                                                      children: [
+                                                        const Icon(Icons.restaurant_menu, color: Colors.teal),
+                                                        const SizedBox(width: 8),
+                                                        Text(
+                                                          "🍽️ $mealKey",
+                                                          style: const TextStyle(
+                                                            fontWeight: FontWeight.bold,
+                                                            fontSize: 18,
+                                                            color: Colors.black87,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 12),
+
+                                                    // 음식 목록
+                                                    ...items.map((item) {
+                                                      final name = item['name'] ?? '';
+                                                      final gram = item['gram'] ?? '';
+
+                                                      return Container(
+                                                        margin: const EdgeInsets.only(bottom: 8),
+                                                        padding: const EdgeInsets.symmetric(
+                                                            horizontal: 12, vertical: 10),
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.teal.withOpacity(0.05),
+                                                          borderRadius: BorderRadius.circular(12),
+                                                        ),
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          children: [
+                                                            Text(
+                                                              name,
+                                                              style: const TextStyle(
+                                                                fontSize: 16,
+                                                                fontWeight: FontWeight.w600,
+                                                                color: Colors.black87,
+                                                              ),
+                                                            ),
+                                                            Text(
+                                                              gram,
+                                                              style: const TextStyle(
+                                                                fontSize: 15,
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.teal,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      );
+                                                    }),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          }).toList(),
+                                        ),
+                                      );
+
+                                    },
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text(
+                                      "닫기",
+                                      style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[800],   // ✅ 버튼 배경 (그레이톤)
+                          foregroundColor: Colors.white,       // ✅ 글자색
+                          padding: const EdgeInsets.symmetric( // ✅ 버튼 크기 (세로 늘리기)
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          "식단 목록 보기",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
+                    ],
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // 🔹 오른쪽: 총 칼로리, 탄단지 카드들
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          DateFormat('yyyy년 MM월 dd일').format(_selectedDay),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        _buildStatTile(
+                          '칼로리',
+                          macros['cal']!,
+                          Icons.local_fire_department,
+                          Colors.redAccent,
+                        ),
+                        const SizedBox(height: 8),
+                        _buildStatTile(
+                          '탄수화물',
+                          macros['carbs']!,
+                          Icons.rice_bowl,
+                          Colors.orange,
+                        ),
+                        _buildStatTile(
+                          '단백질',
+                          macros['protein']!,
+                          Icons.egg_alt,
+                          Colors.green,
+                        ),
+                        _buildStatTile(
+                          '지방',
+                          macros['fat']!,
+                          Icons.water_drop,
+                          Colors.pinkAccent,
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildStatTile(
-                    '총 칼로리',
-                    macros['cal']!,
-                    Icons.local_fire_department,
-                    Colors.redAccent,
-                  ),
-                  const SizedBox(height: 8),
-                  _buildStatTile(
-                    '탄수화물',
-                    macros['carbs']!,
-                    Icons.rice_bowl,
-                    Colors.orange,
-                  ),
-                  _buildStatTile(
-                    '단백질',
-                    macros['protein']!,
-                    Icons.egg_alt,
-                    Colors.green,
-                  ),
-                  _buildStatTile(
-                    '지방',
-                    macros['fat']!,
-                    Icons.water_drop,
-                    Colors.pinkAccent,
                   ),
                 ],
               ),
             ),
-            FutureBuilder<DocumentSnapshot>(
-              future: FirebaseFirestore.instance
-                  .collection('Users')
-                  .doc(globalEmail)
-                  .collection('TodayFood')
-                  .doc(DateFormat('yyyy-MM-dd').format(_selectedDay))
-                  .get(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData || !snapshot.data!.exists) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text("📭 오늘의 식단 정보가 없습니다."),
-                  );
-                }
 
-                final data = snapshot.data!.data()! as Map<String, dynamic>;
-                final mealKeys = data.keys.where((k) => k != 'Sum').toList()
-                  ..sort();
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: mealKeys.map((mealKey) {
-                    final items = List<Map<String, dynamic>>.from(
-                      data[mealKey],
-                    );
-                    return Padding(
-                      padding: const EdgeInsets.only(
-                        left: 20.0,
-                        bottom: 10,
-                        top: 10,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "🍽️ $mealKey",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          ...items.map((item) {
-                            final name = item['name'] ?? '';
-                            final gram = item['gram'] ?? '';
-
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                left: 10.0,
-                                top: 4,
-                              ),
-                              child: Text("- $name ${gram}"),
-                            );
-                          }),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                );
-              },
-            ),
           ],
         ),
       ),

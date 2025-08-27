@@ -28,16 +28,18 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFF9F9F9),
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF121212),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.green,
-          iconTheme: IconThemeData(color: Colors.black),
+          backgroundColor: Color(0xFF1E1E1E),
+          iconTheme: IconThemeData(color: Colors.white),
           titleTextStyle: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
+
         textTheme: const TextTheme(
           bodyMedium: TextStyle(color: Colors.black87),
         ),
@@ -170,11 +172,11 @@ class _MyHomePageState extends State<MyHomePage> {
         centerTitle: true,
         elevation: 0,
         title: const Text(
-          'Zero_kcal_life',
+          '식단 기록',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Colors.white,
           ),
         ),
         leading: IconButton(
@@ -197,9 +199,9 @@ class _MyHomePageState extends State<MyHomePage> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFFB2EBF2), // 진한 민트 (cyan 계열)
-              Color(0xFFA5D6A7), // 진한 연두 (light green 계열)
-              Color(0xFFF1F8E9), // 연초록 마무리
+              Color(0xFF1C1C1C), // 다크그레이
+              Color(0xFF2C2C2C), // 중간톤 그레이
+              Color(0xFF121212), // 블랙에 가까운 톤
             ],
 
             begin: Alignment.topCenter,
@@ -212,38 +214,16 @@ class _MyHomePageState extends State<MyHomePage> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.center, // ← 가운데 정렬
               children: [
-                Text(
-                  '환영합니다, $globalUserName 님! 👋',
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.teal.shade900,
-                  ),
-                ),
-                Text(
-                  DateFormat('yyyy년 MM월 dd일 EEEE').format(DateTime.now()),
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.2,
-                    color: Colors.teal.shade800,
-                    shadows: [
-                      Shadow(
-                        offset: Offset(0.5, 0.5),
-                        blurRadius: 1,
-                        color: Colors.black26,
-                      ),
-                    ],
-                  ),
-                ),
+
+
                 SizedBox(height: 10),
-                _buildSummaryCard(),
-                const SizedBox(height: 20),
+                //_buildSummaryCard(),
+                const SizedBox(height: 50),
                 _buildMainButton(
                   context,
                   icon: Icons.monitor_weight,
                   label: '몸무게 기록',
-                  color: Colors.red,
+                  color: Colors.white, // 딥 블루그레이
                   onTap: () async {
                     Navigator.push(
                       context,
@@ -253,12 +233,13 @@ class _MyHomePageState extends State<MyHomePage> {
                     );
                   },
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 40),
                 _buildMainButton(
                   context,
                   icon: Icons.restaurant_menu,
-                  label: '오늘의 식단',
-                  color: Colors.teal,
+                  label: '오늘 식단',
+                  color: Colors.blueAccent, // 선명한 그린
+
                   onTap: () async {
                     final result = await Navigator.push(
                       context,
@@ -272,12 +253,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     }
                   },
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 40),
                 _buildMainButton(
                   context,
                   icon: Icons.edit_note_rounded,
-                  label: '식단 기록',
-                  color: Colors.lightGreen,
+                  label: '식단 기록 모음',
+                  color: Colors.green,
                   onTap: () {
                     Navigator.push(
                       context,
@@ -287,7 +268,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     );
                   },
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 40),
                 _buildMainButton(
                   context,
                   icon: Icons.notes_rounded,
@@ -326,9 +307,16 @@ class _MyHomePageState extends State<MyHomePage> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.teal.shade50,
+        color: const Color(0xFF1E1E1E), // 어두운 배경
+        border: Border.all(color: Colors.grey.shade700, width: 1.5),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.teal.shade100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Stack(
         children: [
@@ -581,8 +569,8 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 20),
         margin: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: color, width: 2),
+          color: const Color(0xFF2C2C2C),
+          border: Border.all(color: color, width: 1.5),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(

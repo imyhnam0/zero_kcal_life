@@ -297,7 +297,9 @@ class _BodyWeightPageState extends State<BodyWeightPage> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFE8F5E9), Color(0xFFD0F0C0)],
+            colors: [Color(0xFF121212), // 가장 어두운 톤
+          Color(0xFF1E1E1E), // 중간 다크그레이
+          Color(0xFF2C2C2C),], // 조금 밝은 그레이],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -317,7 +319,7 @@ class _BodyWeightPageState extends State<BodyWeightPage> {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal.shade600,
+                      backgroundColor: Color(0xFF2C2C2C), // 진한 다크그레이
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -337,7 +339,7 @@ class _BodyWeightPageState extends State<BodyWeightPage> {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal.shade700,
+                      backgroundColor: Color(0xFF2C2C2C), // 진한 다크그레이
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -406,7 +408,7 @@ class _BodyWeightPageState extends State<BodyWeightPage> {
                                     LineChartBarData(
                                       spots: spots,
                                       isCurved: true,
-                                      color: Colors.teal,
+                                      color: Colors.black,
                                       barWidth: 3,
                                       dotData: FlDotData(show: true),
                                       belowBarData: BarAreaData(
